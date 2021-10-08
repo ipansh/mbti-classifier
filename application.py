@@ -1,17 +1,22 @@
-from flask import Flask, request
+from flask import Flask, request, render_template
 import joblib
 
-vectorizer = joblib.load("/Users/ilya/Desktop/Computer-Science/Github/mbti-classifier/tfidf_vectorizer.pkl")
-mbti_model = joblib.load("/Users/ilya/Desktop/Computer-Science/Github/mbti-classifier/mbti_model.pkl")
+vectorizer = joblib.load("tfidf_vectorizer.pkl")
+mbti_model = joblib.load("mbti_model.pkl")
 
-app = Flask(__name__)
+application = Flask(__name__)
 
-@app.route('/', methods = ['GET', 'POST'])
-def spamorham():
-    message = request.args.get("message")
-    vect_message = vectorizer.transform([message])
-    result = mbti_model.predict(vect_message)[0]
-    return result
+@application.route("/")
+def home_page():       
+    return render_template('page.html')
+
+@application.route("/sub", methods = ['POST'])
+def submit():
+    if request.method == 'POST':
+        result = request.form["userpost"]
+        result2 = vectorizer.transform([result])
+        result3 = mbti_model.predict(result2)[0]
+    return render_template('sub.html', name = result3)
 
 if __name__  == '__main__':
-    app.run()   
+    application.run(port=5000, debug=True)
